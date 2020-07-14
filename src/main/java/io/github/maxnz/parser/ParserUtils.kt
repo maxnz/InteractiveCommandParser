@@ -24,25 +24,45 @@ package io.github.maxnz.parser
 
 const val HELP_INDENT_LEN = 18
 
-fun <T, A> CommandParser<T, A>.Command.action(action: T.(A, List<String>) -> Unit) {
+fun <T, A> CommandParser<T, A>.RunnableCommand.action(action: T.(A, List<String>) -> Unit) {
     this.action = action
 }
 
-fun <T, A> CommandParser<T, A>.Command.subCommand(
+fun <T, A> CommandParser<T, A>.CommandGroup.command(
     identifier: String,
-    init: CommandParser<T, A>.Command.() -> Unit
-): CommandParser<T, A>.Command {
-    val newCommand = parser.Command(identifier, this)
+    init: CommandParser<T, A>.RunnableCommand.() -> Unit
+): CommandParser<T, A>.RunnableCommand {
+    val newCommand = parser.RunnableCommand(identifier, this)
     newCommand.init()
-    subCommands.add(newCommand)
+    commands.add(newCommand)
     return newCommand
 }
 
 fun <T, A> CommandParser<T, A>.command(
     identifier: String,
-    init: CommandParser<T, A>.Command.() -> Unit
-): CommandParser<T, A>.Command {
-    val newCommand = this.Command(identifier)
+    init: CommandParser<T, A>.RunnableCommand.() -> Unit
+): CommandParser<T, A>.RunnableCommand {
+    val newCommand = this.RunnableCommand(identifier)
+    newCommand.init()
+    commands.add(newCommand)
+    return newCommand
+}
+
+fun <T, A> CommandParser<T, A>.CommandGroup.commandGroup(
+    identifier: String,
+    init: CommandParser<T, A>.CommandGroup.() -> Unit
+): CommandParser<T, A>.CommandGroup {
+    val newCommand = parser.CommandGroup(identifier, this)
+    newCommand.init()
+    commands.add(newCommand)
+    return newCommand
+}
+
+fun <T, A> CommandParser<T, A>.commandGroup(
+    identifier: String,
+    init: CommandParser<T, A>.CommandGroup.() -> Unit
+): CommandParser<T, A>.CommandGroup {
+    val newCommand = this.CommandGroup(identifier)
     newCommand.init()
     commands.add(newCommand)
     return newCommand

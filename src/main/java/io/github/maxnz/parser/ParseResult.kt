@@ -24,6 +24,7 @@ package io.github.maxnz.parser
 
 enum class ParseResult {
     SUCCESS,
-    NEEDS_SUBCOMMAND,
-    INVALID_COMMAND
+    TOO_MANY_MATCHING_COMMANDS,
+    COMMAND_NEEDS_SUBCOMMAND,
+    BAD_COMMAND
 }
