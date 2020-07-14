@@ -1,0 +1,24 @@
+---
+language: java
+jdk: openjdk9
+
+cache:
+  directories:
+    - $HOME/.m2
+
+before_install:
+  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+
+branches:
+  only:
+    - master
+
+stages:
+  - name: test
+
+jobs:
+  include:
+    - stage: test
+      install: skip
+      after_success: bash <(curl -s https://codecov.io/bash)
