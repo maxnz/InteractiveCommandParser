@@ -185,15 +185,20 @@ class CommandParser<R, A>(internal val receiver: R) {
             description = "Print this help message"
 
             action { arg, _ ->
-                val msg =
-                    commands
-                        .sortedBy { it.identifier }
-                        .joinToString("\n") { it.helpMessage() }
+                val msg = "$helpParagraph\n\nCommands:\n" +
+                        commands
+                            .sortedBy { it.identifier }
+                            .joinToString("\n") { it.helpMessage() }
 
                 helpMessageAction?.invoke(receiver, arg, msg)
             }
         }
     }
+
+    /**
+     * The paragraph at the beginning of the help message
+     */
+    var helpParagraph = ""
 
     /**
      * The action to run to print the help message

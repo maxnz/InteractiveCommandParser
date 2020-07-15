@@ -345,6 +345,8 @@ class CommandParserTest {
 
         var testStr = ""
 
+        parser.helpParagraph = "Test Commands"
+
         parser.parseCommand("help", 1)
 
         parser.helpMessageAction = {_, msg ->
@@ -355,6 +357,8 @@ class CommandParserTest {
 
         assertTrue {
             testStr ==
+                    "Test Commands\n\n" +
+                    "Commands:\n" +
                     "help${" ".repeat(HELP_INDENT_LEN - 4)}Print this help message\n" +
                     "test1${" ".repeat(HELP_INDENT_LEN - 5)}Test command 1\n" +
                     "test4 T${" ".repeat(HELP_INDENT_LEN - 7)}Test command 4\n" +
