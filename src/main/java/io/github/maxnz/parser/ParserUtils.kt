@@ -24,44 +24,44 @@ package io.github.maxnz.parser
 
 const val HELP_INDENT_LEN = 18
 
-fun <T, A> CommandParser<T, A>.RunnableCommand.action(action: T.(A, List<String>) -> Unit) {
+fun <R, A> CommandParser<R, A>.RunnableCommand.action(action: R.(A, List<String>) -> Unit) {
     this.action = action
 }
 
-fun <T, A> CommandParser<T, A>.CommandGroup.command(
+fun <R, A> CommandParser<R, A>.CommandGroup.command(
     identifier: String,
-    init: CommandParser<T, A>.RunnableCommand.() -> Unit
-): CommandParser<T, A>.RunnableCommand {
+    init: CommandParser<R, A>.RunnableCommand.() -> Unit
+): CommandParser<R, A>.RunnableCommand {
     val newCommand = parser.RunnableCommand(identifier, this)
     newCommand.init()
     commands.add(newCommand)
     return newCommand
 }
 
-fun <T, A> CommandParser<T, A>.command(
+fun <R, A> CommandParser<R, A>.command(
     identifier: String,
-    init: CommandParser<T, A>.RunnableCommand.() -> Unit
-): CommandParser<T, A>.RunnableCommand {
+    init: CommandParser<R, A>.RunnableCommand.() -> Unit
+): CommandParser<R, A>.RunnableCommand {
     val newCommand = this.RunnableCommand(identifier)
     newCommand.init()
     commands.add(newCommand)
     return newCommand
 }
 
-fun <T, A> CommandParser<T, A>.CommandGroup.commandGroup(
+fun <R, A> CommandParser<R, A>.CommandGroup.commandGroup(
     identifier: String,
-    init: CommandParser<T, A>.CommandGroup.() -> Unit
-): CommandParser<T, A>.CommandGroup {
+    init: CommandParser<R, A>.CommandGroup.() -> Unit
+): CommandParser<R, A>.CommandGroup {
     val newCommand = parser.CommandGroup(identifier, this)
     newCommand.init()
     commands.add(newCommand)
     return newCommand
 }
 
-fun <T, A> CommandParser<T, A>.commandGroup(
+fun <R, A> CommandParser<R, A>.commandGroup(
     identifier: String,
-    init: CommandParser<T, A>.CommandGroup.() -> Unit
-): CommandParser<T, A>.CommandGroup {
+    init: CommandParser<R, A>.CommandGroup.() -> Unit
+): CommandParser<R, A>.CommandGroup {
     val newCommand = this.CommandGroup(identifier)
     newCommand.init()
     commands.add(newCommand)

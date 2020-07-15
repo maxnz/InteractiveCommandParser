@@ -96,6 +96,8 @@ class CommandParserTest {
         parser.parseCommand("test", 3)
 
         assertTrue { testBoolean }
+
+        assertTrue { ParseResult.SUCCESS.message().isEmpty() }
     }
 
     @Test
