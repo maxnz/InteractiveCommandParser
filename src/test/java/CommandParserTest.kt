@@ -320,6 +320,33 @@ class CommandParserTest {
                     "test6 sub6-2${" ".repeat(HELP_INDENT_LEN - 12)}SubCommand 6-2"
         }
 
+        var testStr = ""
+
+        parser.parseCommand("help", 1)
+
+        parser.helpMessageAction = {_, msg ->
+            testStr = msg
+        }
+
+        parser.parseCommand("help", 2)
+
+        assertTrue {
+            testStr ==
+                    "help${" ".repeat(HELP_INDENT_LEN - 4)}Print this help message\n" +
+                    "test1${" ".repeat(HELP_INDENT_LEN - 5)}Test command 1\n" +
+                    "test4 T${" ".repeat(HELP_INDENT_LEN - 7)}Test command 4\n" +
+                    "test6 {sub6-1, sub6-2}\n" +
+                    "${" ".repeat(HELP_INDENT_LEN)}Test command 6\n" +
+                    "test6 sub6-1${" ".repeat(HELP_INDENT_LEN - 12)}SubCommand 6-1\n" +
+                    "test6 sub6-2${" ".repeat(HELP_INDENT_LEN - 12)}SubCommand 6-2\n" +
+                    "testTestTest5 TTTTTT\n" +
+                    "${" ".repeat(HELP_INDENT_LEN)}Test command 5\n" +
+                    "testTestTestTestTest2\n" +
+                    "${" ".repeat(HELP_INDENT_LEN)}Test command 2\n" +
+                    "${"t".repeat(HELP_INDENT_LEN)}\n" +
+                    "${" ".repeat(HELP_INDENT_LEN)}Test command 3"
+        }
+
     }
 
 }
