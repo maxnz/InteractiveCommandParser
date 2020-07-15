@@ -6,7 +6,7 @@
 
     <groupId>io.github.maxnz</groupId>
     <artifactId>interactive-command-parser</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <packaging>jar</packaging>
 
     <name>io.github.maxnz:interactive-command-parser</name>
