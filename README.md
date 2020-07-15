@@ -2,7 +2,7 @@
 
 Parse commands from an interactive command line.
 When a valid command is entered, the associated "action" will be run.
-
+Commands can be abbreviated as much as desired provided they still identify a unique command.
 
 ## Usage
 
