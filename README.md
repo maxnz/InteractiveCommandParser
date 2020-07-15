@@ -1,5 +1,9 @@
 # Interactive Command Line Parser
 
+[![Build Status](https://travis-ci.com/maxnz/InteractiveCommandParser.svg?branch=master)](https://travis-ci.com/maxnz/InteractiveCommandParser)
+[![codecov](https://codecov.io/gh/maxnz/InteractiveCommandParser/branch/master/graph/badge.svg)](https://codecov.io/gh/maxnz/InteractiveCommandParser)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.maxnz/interactive-command-parser/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.maxnz/interactive-command-parser)
+
 Parse commands from an interactive command line.
 When a valid command is entered, the associated "action" will be run.
 Commands can be abbreviated as much as desired provided they still identify a unique command.
