@@ -237,13 +237,13 @@ class CommandParserTest {
         val r = ReceiverClass()
         val parser = CommandParser<ReceiverClass, Int>(r)
 
-        val test1 = parser.command("test1") {
+        val test1 = parser.command("example1") {
             description = "Test command 1"
         }
 
         assertTrue {
             test1.helpMessage() ==
-                    "test1${" ".repeat(HELP_INDENT_LEN - 5)}Test command 1"
+                    "example1${" ".repeat(HELP_INDENT_LEN - 8)}Test command 1"
         }
 
 
@@ -359,8 +359,8 @@ class CommandParserTest {
             testStr ==
                     "Test Commands\n\n" +
                     "Commands:\n" +
+                    "example1${" ".repeat(HELP_INDENT_LEN - 8)}Test command 1\n" +
                     "help${" ".repeat(HELP_INDENT_LEN - 4)}Print this help message\n" +
-                    "test1${" ".repeat(HELP_INDENT_LEN - 5)}Test command 1\n" +
                     "test4 T${" ".repeat(HELP_INDENT_LEN - 7)}Test command 4\n" +
                     "test6 {sub6-1, sub6-2}\n" +
                     "${" ".repeat(HELP_INDENT_LEN)}Test command 6\n" +

@@ -152,11 +152,11 @@ class CommandParser<R, A>(internal val receiver: R) {
             }
 
             val possibleCommands =
-                commands.filter { it.identifier.startsWith(firstIdentifier) }
+                commands.filter { it.identifier.startsWith(firstIdentifier, ignoreCase = true) }
             return try {
                 possibleCommands.single().parseArgs(args.drop(1), arg)
             } catch (e: NoSuchElementException) {
-                ParseResult.BAD_COMMAND.cmd = "$fullIdentifier $firstIdentifier"
+                ParseResult.BAD_COMMAND.cmd = "$fullIdentifier ${args.joinToString(" ")}"
                 ParseResult.BAD_COMMAND
             } catch (e: IllegalArgumentException) {
                 ParseResult.TOO_MANY_MATCHING_COMMANDS.cmd = "$fullIdentifier $firstIdentifier"
@@ -235,12 +235,12 @@ class CommandParser<R, A>(internal val receiver: R) {
     private fun parseCommand(args: List<String>, arg: A) {
         val firstIdentifier = args[0]
         val possibleCommands =
-            commands.filter { it.identifier.startsWith(firstIdentifier) }
+            commands.filter { it.identifier.startsWith(firstIdentifier, ignoreCase = true) }
 
         val result: ParseResult = try {
             possibleCommands.single().parseArgs(args.drop(1), arg)
         } catch (e: NoSuchElementException) {
-            ParseResult.BAD_COMMAND.cmd = firstIdentifier
+            ParseResult.BAD_COMMAND.cmd = args.joinToString(" ")
             ParseResult.BAD_COMMAND
         } catch (e: IllegalArgumentException) {
             ParseResult.TOO_MANY_MATCHING_COMMANDS.cmd = firstIdentifier
