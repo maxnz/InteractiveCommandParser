@@ -320,6 +320,27 @@ class CommandParserTest {
                     "test6 sub6-2${" ".repeat(HELP_INDENT_LEN - 12)}SubCommand 6-2"
         }
 
+
+        lateinit var sub7: CommandParser<ReceiverClass, Int>.RunnableCommand
+
+        val test7 = parser.commandGroup("tt") {
+            description = "Test command 7"
+
+            sub7 = command("ttt") {
+                description = "SubCommand 7"
+            }
+        }
+
+        assertTrue {
+            sub7.helpMessage() == "tt ttt${" ".repeat(HELP_INDENT_LEN - 6)}SubCommand 7"
+        }
+
+        assertTrue {
+            test7.helpMessage() ==
+                    "tt {ttt}${" ".repeat(HELP_INDENT_LEN - 8)}Test command 7\n" +
+                    "tt ttt${" ".repeat(HELP_INDENT_LEN - 6)}SubCommand 7"
+        }
+
         var testStr = ""
 
         parser.parseCommand("help", 1)
@@ -343,6 +364,8 @@ class CommandParserTest {
                     "${" ".repeat(HELP_INDENT_LEN)}Test command 5\n" +
                     "testTestTestTestTest2\n" +
                     "${" ".repeat(HELP_INDENT_LEN)}Test command 2\n" +
+                    "tt {ttt}${" ".repeat(HELP_INDENT_LEN - 8)}Test command 7\n" +
+                    "tt ttt${" ".repeat(HELP_INDENT_LEN - 6)}SubCommand 7\n" +
                     "${"t".repeat(HELP_INDENT_LEN)}\n" +
                     "${" ".repeat(HELP_INDENT_LEN)}Test command 3"
         }
