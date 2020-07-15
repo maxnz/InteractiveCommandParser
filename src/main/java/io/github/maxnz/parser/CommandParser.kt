@@ -22,8 +22,6 @@
 
 package io.github.maxnz.parser
 
-import org.pmw.tinylog.Logger
-
 /**
  * The command parser
  *
@@ -33,11 +31,18 @@ import org.pmw.tinylog.Logger
  */
 class CommandParser<R, A>(internal val receiver: R) {
 
+    /**
+     * Represents a command
+     *
+     * @property identifier The string that the user passes to run this command
+     * @param group The command group this command is a part of (null means
+     * it is a top-level command)
+     */
     abstract inner class Command(val identifier: String, group: CommandGroup? = null) {
 
         /**
-         * The full identifier of this command, meaning it includes it's parent's
-         * full identifier (if it has a parent), e.g. the sub-command "list" of
+         * The full identifier of this command, meaning it includes its group's
+         * full identifier (if it is part of a group), e.g. the sub-command "list" of
          * "connections" would have an identifier of "list" and a fullIdentifier
          * of "connections list", while the sub-command "all" of "list" would have
          * a full identifier of "connections list all"
@@ -45,56 +50,46 @@ class CommandParser<R, A>(internal val receiver: R) {
         val fullIdentifier: String =
             if (group != null) "${group.fullIdentifier} $identifier" else identifier
 
+        /**
+         * The description of the command shown as part of the help message
+         */
         var description: String = ""
 
+        /**
+         * Create the help message for this command
+         */
         abstract fun helpMessage(): String
 
+        /**
+         * Parse a list of identifiers and/or arguments and call the appropriate
+         * action or command
+         *
+         * @param arg The argument to pass to the action that is run
+         */
         abstract fun parseArgs(args: List<String>, arg: A): ParseResult
     }
 
     /**
-     * Represents a command
-     *
-     * @property identifier The string that the user passes to run this command
-     * @param group The command that this command is a sub-command of
-     * (null means it is a top-level command)
+     * Represents a command that will perform an action
      */
     inner class RunnableCommand(
         identifier: String,
         group: CommandGroup? = null
     ) : Command(identifier, group) {
         /**
-         * The action to run when this command is called.
-         * If this command only has sub-commands, leave this null.
+         * The action to run when this command is called
          */
         lateinit var action: R.(A, List<String>) -> Unit
 
         /**
          * The string that represents the arguments to pass in the help message
          */
-        var argHelpStr: String? = null
+        var argHelpStr: String = ""
 
-        /**
-         * If the arguments are required or not
-         */
-        var requireArg: Boolean = false
-
-        /**
-         * Create the help message for this command and its sub-commands
-         */
         override fun helpMessage(): String {
             var msg = fullIdentifier
 
-            when {
-                argHelpStr == null -> {
-                }
-                argHelpStr != null && requireArg -> {
-                    msg += " $argHelpStr"
-                }
-                argHelpStr != null && !requireArg -> {
-                    msg += " [$argHelpStr]"
-                }
-            }
+            if (argHelpStr.isNotBlank()) msg += " $argHelpStr"
 
             if (msg.length < HELP_INDENT_LEN)
                 msg = msg.padEnd(HELP_INDENT_LEN) + description
@@ -105,21 +100,20 @@ class CommandParser<R, A>(internal val receiver: R) {
         }
 
         /**
-         * Parse a string of space-delimited identifiers and call the
-         * appropriate sub-command or execute the `action`
+         * Call the action
          *
-         * @param args The identifiers and arguments to parse
+         * @param args The arguments to pass to the action
          * @param arg The argument of type `A` that will be passed to the action
-         * @return The result of parsing the command (see [ParseResult])
          */
         override fun parseArgs(args: List<String>, arg: A): ParseResult {
-            // TODO: Check args
-
             action.invoke(receiver, arg, args)
             return ParseResult.SUCCESS
         }
     }
 
+    /**
+     * Represents a group of commands
+     */
     inner class CommandGroup(
         identifier: String,
         group: CommandGroup? = null
@@ -127,10 +121,13 @@ class CommandParser<R, A>(internal val receiver: R) {
         val parser: CommandParser<R, A>
             get() = this@CommandParser
 
+        /**
+         * The commands associated with this command group
+         */
         val commands: MutableList<Command> = mutableListOf()
 
         /**
-         * A list of the identifiers of the sub-commands associated with this command
+         * The identifiers of the commands associated with this command group
          */
         val commandIdentifiers: List<String>
             get() = commands.map { it.identifier }.sorted()
@@ -172,12 +169,12 @@ class CommandParser<R, A>(internal val receiver: R) {
 
 
     /**
-     * A list of the top-level commands
+     * The top-level commands
      */
     internal val commands = mutableListOf<Command>()
 
     /**
-     * A list of the identifiers of the top-level commands
+     * The identifiers of the top-level commands
      */
     val commandIdentifiers: List<String>
         get() = commands.map { it.identifier }
