@@ -149,20 +149,27 @@ class CommandParser<R, A>(internal val receiver: R) {
         }
 
         override fun parseArgs(args: List<String>, arg: A): ParseResult {
-            val firstIdentifier = args.getOrNull(0) ?: return ParseResult.COMMAND_NEEDS_SUBCOMMAND
+            val firstIdentifier = args.getOrNull(0) ?: run {
+                ParseResult.COMMAND_NEEDS_SUBCOMMAND.cmdGroup = this
+                return ParseResult.COMMAND_NEEDS_SUBCOMMAND
+            }
 
             val possibleCommands =
                 commands.filter { it.identifier.startsWith(firstIdentifier) }
             return try {
                 possibleCommands.single().parseArgs(args.drop(1), arg)
             } catch (e: NoSuchElementException) {
+                ParseResult.BAD_COMMAND.cmd = "$fullIdentifier $firstIdentifier"
                 ParseResult.BAD_COMMAND
             } catch (e: IllegalArgumentException) {
+                ParseResult.TOO_MANY_MATCHING_COMMANDS.cmd = "$fullIdentifier $firstIdentifier"
+                ParseResult.TOO_MANY_MATCHING_COMMANDS.possibleCommands =
+                    possibleCommands.map { it.identifier }.sorted()
                 ParseResult.TOO_MANY_MATCHING_COMMANDS
             }
         }
-
     }
+
 
     /**
      * A list of the top-level commands
@@ -231,28 +238,23 @@ class CommandParser<R, A>(internal val receiver: R) {
         val result: ParseResult = try {
             possibleCommands.single().parseArgs(args.drop(1), arg)
         } catch (e: NoSuchElementException) {
+            ParseResult.BAD_COMMAND.cmd = firstIdentifier
             ParseResult.BAD_COMMAND
         } catch (e: IllegalArgumentException) {
+            ParseResult.TOO_MANY_MATCHING_COMMANDS.cmd = firstIdentifier
+            ParseResult.TOO_MANY_MATCHING_COMMANDS.possibleCommands =
+                possibleCommands.map { it.fullIdentifier }.sorted()
             ParseResult.TOO_MANY_MATCHING_COMMANDS
         }
 
         when (result) {
             ParseResult.SUCCESS -> return
-            ParseResult.BAD_COMMAND -> badCommandAction?.invoke(receiver, arg, "Bad Command: $firstIdentifier")
-            ParseResult.COMMAND_NEEDS_SUBCOMMAND -> {
-                val cmdGroup = possibleCommands.single() as CommandGroup
-                commandNeedsSubCommandAction?.invoke(
-                    receiver, arg,
-                    "Command ${cmdGroup.fullIdentifier} requires a sub-command: ${cmdGroup.commandIdentifiers}"
-                )
-            }
-            ParseResult.TOO_MANY_MATCHING_COMMANDS -> {
-                val possible = possibleCommands.map { it.identifier }.sorted()
-                tooManyMatchingCommandsAction?.invoke(
-                    receiver, arg,
-                    "Partial command $firstIdentifier matches more than one command: $possible"
-                )
-            }
+            ParseResult.BAD_COMMAND ->
+                badCommandAction?.invoke(receiver, arg, result.message())
+            ParseResult.COMMAND_NEEDS_SUBCOMMAND ->
+                commandNeedsSubCommandAction?.invoke(receiver, arg, result.message())
+            ParseResult.TOO_MANY_MATCHING_COMMANDS ->
+                tooManyMatchingCommandsAction?.invoke(receiver, arg, result.message())
         }
     }
 }

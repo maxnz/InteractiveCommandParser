@@ -23,8 +23,25 @@
 package io.github.maxnz.parser
 
 enum class ParseResult {
-    SUCCESS,
-    TOO_MANY_MATCHING_COMMANDS,
-    COMMAND_NEEDS_SUBCOMMAND,
-    BAD_COMMAND
+    SUCCESS{
+        override fun message() = ""
+    },
+    BAD_COMMAND {
+        override fun message() =
+            "Bad Command: $cmd"
+    },
+    COMMAND_NEEDS_SUBCOMMAND {
+        override fun message() =
+            "Command ${cmdGroup.fullIdentifier} requires a sub-command: ${cmdGroup.commandIdentifiers}"
+    },
+    TOO_MANY_MATCHING_COMMANDS {
+        override fun message() =
+            "Partial command $cmd matches more than one command: $possibleCommands"
+    };
+
+    var cmd = ""
+    lateinit var cmdGroup: CommandParser<*, *>.CommandGroup
+    lateinit var possibleCommands: List<String>
+
+    abstract fun message(): String
 }

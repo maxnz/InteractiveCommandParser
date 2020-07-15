@@ -134,6 +134,8 @@ class CommandParserTest {
         val parser = CommandParser<ReceiverClass, Int>(r)
         var testStr = ""
 
+        parser.parseCommand("bad", 2)
+
         parser.badCommandAction = { _, msg ->
             testStr = msg
         }
@@ -144,17 +146,40 @@ class CommandParserTest {
     }
 
     @Test
+    fun testBadSubCommand() {
+        val r = ReceiverClass()
+        val parser = CommandParser<ReceiverClass, Int>(r)
+        var testStr = ""
+
+        parser.commandGroup("test") {
+            command("sub") {}
+        }
+
+        parser.parseCommand("test sub3", 2)
+
+        parser.badCommandAction = { _, msg ->
+            testStr = msg
+        }
+
+        parser.parseCommand("test sub3", 2)
+
+        assertTrue { testStr == "Bad Command: test sub3" }
+    }
+
+    @Test
     fun testTooManyCommands() {
         val r = ReceiverClass()
         val parser = CommandParser<ReceiverClass, Int>(r)
         var testStr = ""
 
+        parser.command("test") {}
+        parser.command("tea") {}
+
+        parser.parseCommand("te", 2)
+
         parser.tooManyMatchingCommandsAction = { _, msg ->
             testStr = msg
         }
-
-        parser.command("test") {}
-        parser.command("tea") {}
 
         parser.parseCommand("te", 2)
 
@@ -167,13 +192,15 @@ class CommandParserTest {
         val parser = CommandParser<ReceiverClass, Int>(r)
         var testStr = ""
 
-        parser.commandNeedsSubCommandAction = { _, msg ->
-            testStr = msg
-        }
-
         parser.commandGroup("test") {
             command("sub1") {}
             command("sub2") {}
+        }
+
+        parser.parseCommand("test", 2)
+
+        parser.commandNeedsSubCommandAction = { _, msg ->
+            testStr = msg
         }
 
         parser.parseCommand("test", 2)
