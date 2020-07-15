@@ -80,19 +80,14 @@ class CommandParser<R, A>(internal val receiver: R) {
         var requireArg: Boolean = false
 
         /**
-         * The parser this command or sub-command is a part of
-         */
-        val parser: CommandParser<R, A>
-            get() = this@CommandParser
-
-        /**
          * Create the help message for this command and its sub-commands
          */
         override fun helpMessage(): String {
             var msg = fullIdentifier
 
             when {
-                argHelpStr == null -> {}
+                argHelpStr == null -> {
+                }
                 argHelpStr != null && requireArg -> {
                     msg += " $argHelpStr"
                 }
@@ -138,7 +133,7 @@ class CommandParser<R, A>(internal val receiver: R) {
          * A list of the identifiers of the sub-commands associated with this command
          */
         val commandIdentifiers: List<String>
-            get() = commands.map { it.identifier }
+            get() = commands.map { it.identifier }.sorted()
 
         override fun helpMessage(): String {
             var msg = "$fullIdentifier {${commandIdentifiers.joinToString(", ")}}"
@@ -191,7 +186,7 @@ class CommandParser<R, A>(internal val receiver: R) {
                         .sortedBy { it.identifier }
                         .joinToString("\n") { it.helpMessage() }
 
-                helpMessageAction(arg, msg)
+                helpMessageAction?.invoke(receiver, arg, msg)
             }
         }
     }
@@ -199,48 +194,24 @@ class CommandParser<R, A>(internal val receiver: R) {
     /**
      * The action to run to print the help message
      */
-    var helpMessageAction: R.(A, String) -> Unit = { _, msg ->
-        Logger.info(msg)
-    }
-
-    /**
-     * Create the string that alerts the user that they typed a bad command
-     *
-     * @param cmd The string they gave
-     */
-    fun badCommandString(cmd: String): String = "Bad Command: $cmd"
+    var helpMessageAction: (R.(arg: A, msg: String) -> Unit)? = null
 
     /**
      * The action to run to alert the user that they typed a bad command
      */
-    var badCommandAction: R.(A, String) -> Unit = { _, cmd ->
-        Logger.error(badCommandString(cmd))
-    }
-
-    /**
-     * Create the string that alerts the user that they need to specify a
-     * sub-command after their command
-     *
-     * @param cmd The command that needs a sub-command
-     */
-    fun commandNeedsSubCommandString(cmd: CommandGroup): String =
-        "Command ${cmd.fullIdentifier} requires a sub-command: ${cmd.commandIdentifiers}"
+    var badCommandAction: (R.(arg: A, msg: String) -> Unit)? = null
 
     /**
      * The action to run to alert the user that they need a sub-command after
      * their command
      */
-    var commandNeedsSubCommandAction: R.(A, CommandGroup) -> Unit = { _, cmd ->
-        Logger.error(commandNeedsSubCommandString(cmd))
-    }
+    var commandNeedsSubCommandAction: (R.(arg: A, msg: String) -> Unit)? = null
 
-    fun tooManyMatchingCommandsString(cmd: String, possible: List<String>): String =
-        "Partial command $cmd matches more than one command: $possible"
-
-    var tooManyMatchingCommandsAction: R.(A, String, List<String>) -> Unit =
-        { _, cmd, possible ->
-            Logger.error(tooManyMatchingCommandsString(cmd, possible))
-        }
+    /**
+     * The action to run to alert the user that the command they entered matches
+     * more than one command
+     */
+    var tooManyMatchingCommandsAction: (R.(arg: A, msg: String) -> Unit)? = null
 
     /**
      * Parse a string and run the appropriate command
@@ -267,12 +238,21 @@ class CommandParser<R, A>(internal val receiver: R) {
 
         when (result) {
             ParseResult.SUCCESS -> return
-            ParseResult.BAD_COMMAND -> badCommandAction(receiver, arg, firstIdentifier)
-            ParseResult.COMMAND_NEEDS_SUBCOMMAND ->
-                commandNeedsSubCommandAction(receiver, arg, possibleCommands.single() as CommandGroup)
-            ParseResult.TOO_MANY_MATCHING_COMMANDS ->
-                tooManyMatchingCommandsAction(receiver, arg, firstIdentifier,
-                    possibleCommands.map { it.identifier })
+            ParseResult.BAD_COMMAND -> badCommandAction?.invoke(receiver, arg, "Bad Command: $firstIdentifier")
+            ParseResult.COMMAND_NEEDS_SUBCOMMAND -> {
+                val cmdGroup = possibleCommands.single() as CommandGroup
+                commandNeedsSubCommandAction?.invoke(
+                    receiver, arg,
+                    "Command ${cmdGroup.fullIdentifier} requires a sub-command: ${cmdGroup.commandIdentifiers}"
+                )
+            }
+            ParseResult.TOO_MANY_MATCHING_COMMANDS -> {
+                val possible = possibleCommands.map { it.identifier }.sorted()
+                tooManyMatchingCommandsAction?.invoke(
+                    receiver, arg,
+                    "Partial command $firstIdentifier matches more than one command: $possible"
+                )
+            }
         }
     }
 }
