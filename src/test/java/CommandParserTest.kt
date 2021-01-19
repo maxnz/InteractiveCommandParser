@@ -22,6 +22,7 @@
 
 import io.github.maxnz.parser.*
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -165,8 +166,21 @@ class CommandParserTest {
         }
 
         parser.parseCommand("bad", 2)
+        assertEquals("Bad Command: bad", testStr)
+    }
 
-        assertTrue { testStr == "Bad Command: bad" }
+    @Test
+    fun testEmptyCommand() {
+        val r = ReceiverClass()
+        val parser = CommandParser<ReceiverClass, Int>(r)
+        var testStr = ""
+
+        parser.badCommandAction = { _, msg ->
+            testStr = msg
+        }
+
+        parser.parseCommand("", 2)
+        assertEquals("No command sent", testStr)
     }
 
     @Test

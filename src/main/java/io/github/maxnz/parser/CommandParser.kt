@@ -233,6 +233,11 @@ class CommandParser<R, A>(internal val receiver: R) {
     }
 
     private fun parseCommand(args: List<String>, arg: A) {
+        if (args.isEmpty()) {
+            badCommandAction?.invoke(receiver, arg, "No command sent")
+            return
+        }
+
         val firstIdentifier = args[0]
         val possibleCommands =
             commands.filter { it.identifier.startsWith(firstIdentifier, ignoreCase = true) }
